@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+from quiz_functionality import QuizBrain
 
 category = ['Any Category', 'General Knowledge', 'Entertainment: Books', 'Entertainment: Film', 'Entertainment: Music',
             'Entertainment: Musicals & Theatres', 'Entertainment: Television', 'Entertainment: Video Games',
@@ -71,6 +72,7 @@ def logging_in(name, password):
     if user_name in database:
         if user_password == database[user_name]['password']:
             user_data = [user_name, database[user_name]]
+            return user_data
             choose()
         else:
             password.configure(bg='red', show='')
@@ -210,54 +212,153 @@ def get_url(number, difficulty, topic):
     url = 'https://opentdb.com/api.php'+number+difficulty+topic+'&type=multiple'
     questions = requests.get(url)
     questions = questions.json()
-    quiz(user_data, questions)
+    return questions
 
 
-def quiz(user_data, questions):
-    def check():
-        choice = check_var.get()
-        output = 'none'
-        if choice == 1:
-            output = results[0]
-        elif choice == 2:
-            output = results[1]
-        elif choice == 3:
-            output = results[2]
-        elif choice == 4:
-            output = results[3]
-        print(output)
-    import random
-    global choosing
-    try:
-        choosing.destroy()
-    except:
-        pass
-    game = tk.Tk()
-    game.title('QUIZ by DS')
-    game.geometry('450x150+200+200')
-    game.iconbitmap('icon.ico')
-    info = tk.Label(game, text=f'Welcome to the Quiz {user_data[0]}. Have fun!', font=text_style)
-    info.pack()
-    for question in questions['results']:
-        check_var = tk.IntVar()
-        game_area = tk.Frame(game, highlightbackground="black", highlightthickness=1)
-        question_text = tk.Label(game_area, text=question['question'])
-        question_text.pack()
-        results = [values for values in question['incorrect_answers']]
-        results.append(question['correct_answer'])
-        random.shuffle(results)
-        tk.Radiobutton(game_area, text=results[0], variable=check_var, value=1, command=check).pack()
-        tk.Radiobutton(game_area, text=results[1], variable=check_var, value=2, command=check).pack()
-        tk.Radiobutton(game_area, text=results[2], variable=check_var, value=3, command=check).pack()
-        tk.Radiobutton(game_area, text=results[3], variable=check_var, value=4, command=check).pack()
+class QuizInterface:
+
+    def __init__(self, quiz_brain=QuizBrain):
+        self.quiz = quiz_brain
+        self.window = tk.Tk()
+        self.window.title("iQuiz App")
+        self.window.geometry("850x530")
+
+        # Display Title
+        self.display_title()
+
+        # Create a canvas for question text, and dsiplay question
+        self.canvas = tk.Canvas(width=800, height=250)
+        self.question_text = self.canvas.create_text(400, 125,
+                                                     text="Question here",
+                                                     width=680,
+                                                     font=text_style
+                                                     )
+        self.canvas.grid(row=2, column=0, columnspan=2, pady=50)
+        self.display_question()
+
+        # Declare a StringVar to store user's answer
+        self.user_answer = tk.StringVar()
+
+        # Display four options (radio buttons)
+        self.opts = self.radio_buttons()
+        self.display_options()
+
+        # To show whether the answer is right or wrong
+        self.feedback = tk.Label(self.window, pady=10, font=("ariel", 15, "bold"))
+        self.feedback.place(x=300, y=380)
+
+        # Next and Quit Button
+        self.buttons()
+
+        # Mainloop
+        self.window.mainloop()
+
+    def display_title(self):
+        """To display title"""
+
+        # Title
+        title = tk.Label(self.window, text="iQuiz Application",
+                      width=50, bg="green", fg="white", font=("ariel", 20, "bold"))
+
+        # place of the title
+        title.place(x=0, y=2)
+
+    def display_question(self):
+        """To display the question"""
+
+        q_text = self.quiz.next_question()
+        self.canvas.itemconfig(self.question_text, text=q_text)
+
+    def radio_buttons(self):
+        """To create four options (radio buttons)"""
+
+        # initialize the list with an empty list of options
+        choice_list = []
+
+        # position of the first option
+        y_pos = 220
+
+        # adding the options to the list
+        while len(choice_list) < 4:
+
+            # setting the radio button properties
+            radio_btn = tk.Radiobutton(self.window, text="", variable=self.user_answer,
+                                    value='', font=("ariel", 14))
+
+            # adding the button to the list
+            choice_list.append(radio_btn)
+
+            # placing the button
+            radio_btn.place(x=200, y=y_pos)
+
+            # incrementing the y-axis position by 40
+            y_pos += 40
+
+        # return the radio buttons
+        return choice_list
+
+    def display_options(self):
+        """To display four options"""
+
+        val = 0
+
+        # deselecting the options
+        self.user_answer.set(None)
+
+        # looping over the options to be displayed for the
+        # text of the radio buttons.
+        for option in self.quiz.current_question.choices:
+            self.opts[val]['text'] = option
+            self.opts[val]['value'] = option
+            val += 1
+
+    def next_btn(self):
+        """To show feedback for each answer and keep checking for more questions"""
+
+        # Check if the answer is correct
+        if self.quiz.check_answer(self.user_answer.get()):
+            self.feedback["fg"] = "green"
+            self.feedback["text"] = 'Correct answer! \U0001F44D'
+        else:
+            self.feedback['fg'] = 'red'
+            self.feedback['text'] = ('\u274E Oops! \n'
+                                     f'The right answer is: {self.quiz.current_question.correct_answer}')
+
+        if self.quiz.has_more_questions():
+            # Moves to next to display next question and its options
+            self.display_question()
+            self.display_options()
+        else:
+            # if no more questions, then it displays the score
+            self.display_result()
+
+            # destroys the self.window
+            self.window.destroy()
+
+    def buttons(self):
+        """To show next button and quit button"""
+
+        # The first button is the Next button to move to the
+        # next Question
+        next_button = tk.Button(self.window, text="Next", command=self.next_btn,
+                             width=10, bg="green", fg="white", font=("ariel", 16, "bold"))
+
+        # placing the button on the screen
+        next_button.place(x=350, y=460)
+
+        # This is the second button which is used to Quit the self.window
+        quit_button = tk.Button(self.window, text="Quit", command=self.window.destroy,
+                             width=5, bg="red", fg="white", font=("ariel", 16, " bold"))
+
+        # placing the Quit button on the screen
+        quit_button.place(x=700, y=50)
 
 
-        game_area.pack()
-    game.mainloop()
 
 
 
 
-database = open_file()
-log_in_window()
+# database = open_file()
+# log_in_window()
+
 
