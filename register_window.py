@@ -1,12 +1,14 @@
+import sqlite3
 import tkinter as tk
 import quiz_style as qs
 import preparation as pr
+import database_func as db
+from user import User
+from settings_window import SettingsWindow
 
 
 class RegisterWindow:
-
-    def __init__(self, database):
-        self.database = database
+    def __init__(self):
         self.window = tk.Toplevel()
         self.window.geometry('450x150+300+300')
         self.window.iconbitmap('icon.ico')
@@ -50,7 +52,6 @@ class RegisterWindow:
         tk.mainloop()
 
     def registration(self, name, password, repeat_password):
-        global database, user_data
         user_name = name.get()
         user_password = password.get()
         user_repeat_password = repeat_password.get()
@@ -60,19 +61,18 @@ class RegisterWindow:
             password.insert(0, 'Passwords to short')
             repeat_password.delete(0, "end")
         else:
-            if user_name not in database:
+            try:
                 if user_password == user_repeat_password:
-                    database.update({user_name: {"password": user_password, "points": 135}})
-                    user_data = [user_name, database[user_name]]
-                    # choose()
+                    db.create_user(user_name, user_password)
+                    user = User(user_name, user_password)
+                    self.window.destroy()
+                    SettingsWindow(user)
                 else:
                     password.configure(bg='red')
                     password.delete(0, "end")
-                    repeat_password.configure(bg='red', show='')
+                    password.insert(0, 'Passwords do not match')
                     repeat_password.delete(0, "end")
-                    password.insert(0, 'Passwords does not match')
-                    repeat_password.insert(0, 'Passwords does not match')
-            else:
+            except sqlite3.IntegrityError:
                 name.configure(bg='red')
                 name.delete(0, "end")
-                name.insert(0, 'User already exits')
+                name.insert(0, 'User already exists')

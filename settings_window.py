@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from main_page import MainPage
 category = ['Any Category', 'General Knowledge', 'Entertainment: Books', 'Entertainment: Film', 'Entertainment: Music',
             'Entertainment: Musicals & Theatres', 'Entertainment: Television', 'Entertainment: Video Games',
             'Entertainment: Board Games', 'Science & Nature', 'Science: Computers', 'Science: Mathematics', 'Mythology',
@@ -10,7 +11,8 @@ category = ['Any Category', 'General Knowledge', 'Entertainment: Books', 'Entert
 
 class SettingsWindow:
 
-    def __init__(self):
+    def __init__(self, user):
+        self.user = user
         self.window = tk.Tk()
         self.window.title('QUIZ by DS')
         self.window.geometry('350x220+300+300')
@@ -56,4 +58,6 @@ class SettingsWindow:
         url = 'https://opentdb.com/api.php' + number + difficulty + topic + '&type=multiple'
         questions = requests.get(url)
         questions = questions.json()
-        return questions
+        questions = questions['results']
+        self.window.destroy()
+        MainPage(self.user, questions)
