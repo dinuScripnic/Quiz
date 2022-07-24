@@ -2,6 +2,7 @@
 ## Technology
 * Language: Python(logics), SQL(relational database)
 * Appearence: TkinterGUI
+* Database: SQLite3
 * Questions API: https://opentdb.com/api_config.php
 ## Functionality
 * First when you lounch the quiz you get to the login page. You can either log in if you have already used the app, or create a new account by pressing the Register button.
