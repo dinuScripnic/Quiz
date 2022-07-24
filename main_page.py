@@ -27,7 +27,7 @@ class MainPage:
         else:
             self.window.destroy()
             self.functionality.check_answer(user_answer, correct_answer)
-            self.user.score = self.functionality.get_score()
+            self.user.points += self.functionality.get_score()
             db.update_user(self.user)
 
     def display_question(self):
@@ -41,6 +41,6 @@ class MainPage:
         for i in range(4):
             answer = tk.Radiobutton(self.frame, text=data[1][i], variable=r, value=i, font=("Equinox", 12))
             answer.pack()
-        button = tk.Button(self.frame, text="Next", command=lambda r=r: self.next(user_answer=data[1][r.get()], correct_answer=data[2]), font=("Equinox", 10), width=10)
+        button = tk.Button(self.frame, text="Next", command=lambda r=r: self.next(user_answer=data[1][r.get()], correct_answer=data[2]), font=("Equinox", 10, 'bold'), width=10)
         button.pack(pady=5)
         self.window.mainloop()

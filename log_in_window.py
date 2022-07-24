@@ -6,7 +6,6 @@ from register_window import RegisterWindow
 
 
 class LogInWindow:
-    db.create_database()
 
     def __init__(self):
         self.page = tk.Tk()
@@ -29,14 +28,18 @@ class LogInWindow:
         password_entry = tk.Entry(work_sector, font=('Equinox', 10), show="*", width=25)
         password_entry.bind("<Button-1>", lambda e, entry=password_entry: self.prepare_entry(e, entry, '*'))
         password_entry.grid(row=1, column=1, padx=5, pady=5)
-        register_button = tk.Button(work_sector, text='Register now!', command=lambda: RegisterWindow(), font=('Equinox', 10), width=10)
+        register_button = tk.Button(work_sector, text='Register now!', command=self.register, font=('Equinox', 10), width=10)
         register_button.grid(row=2, column=0, padx=5, pady=5)
         work_sector.pack(pady=1)
 
-        log_in_button = tk.Button(self.page, text='Log in', command=lambda name=name_entry, password=password_entry: self.logging_in(name, password), width=10, height=1, font=('Equinox', 10))
+        log_in_button = tk.Button(self.page, text='Log in', command=lambda name=name_entry, password=password_entry: self.logging_in(name, password), width=10, height=1, font=('Equinox', 10, 'bold'))
         log_in_button.pack(pady=5)
 
         tk.mainloop()
+
+    def register(self):
+        self.page.destroy()
+        RegisterWindow()
 
     def prepare_entry(self, e, entry, show):
         entry.delete(0, tk.END)
@@ -55,5 +58,3 @@ class LogInWindow:
             name.configure(bg='red', show='')
             name.delete(0, "end")
             name.insert(0, 'User does not exist')
-
-LogInWindow()

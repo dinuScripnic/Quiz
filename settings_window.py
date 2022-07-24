@@ -39,8 +39,7 @@ class SettingsWindow:
         topics.grid(row=3, column=1, padx=5, pady=5)
         generate = tk.Button(self.window, text='Generate Quiz',
                              command=lambda number=nr_questions, difficulty=difficulty_choose, topic=topics:
-                             self.get_url(number, difficulty, topic), font=('Equinox', 10), width=10)
-        # center the button
+                             self.get_url(number, difficulty, topic), font=('Equinox', 10, 'bold'), width=12)
         generate.grid(row=4, column=0, columnspan=2, padx=5, pady=5)
         self.window.mainloop()
 
